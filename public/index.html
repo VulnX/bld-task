@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLD Remote Browser Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #controls {
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        #screen-container {
+            border: 2px solid #444;
+            background: #000;
+            width: 1280px;
+            height: 720px;
+        }
+    </style>
+    <script type="module">
+        import RFB from 'https://cdn.jsdelivr.net/npm/@novnc/novnc@1.4.0/core/rfb.js';
+
+        let rfb;
+        const connectBtn = document.getElementById('connect-btn');
+        const container = document.getElementById('screen-container');
+
+        connectBtn.addEventListener('click', () => {
+            if (rfb) return;
+
+            connectBtn.innerText = "Connecting...";
+            connectBtn.disabled = true;
+
+            const wsUrl = `ws://${window.location.host}`;
+
+            rfb = new RFB(container, wsUrl);
+
+            rfb.addEventListener('connect', () => {
+                connectBtn.innerText = "Connected Session";
+                console.log("Successfully connected to remote browser screen.");
+            });
+
+            rfb.addEventListener('disconnect', (e) => {
+                connectBtn.innerText = "Start Browser Control";
+                connectBtn.disabled = false;
+                rfb = null;
+                console.log("Disconnected:", e.detail.clean);
+            });
+
+            rfb.scaleViewport = true;
+            rfb.resizeSession = false;
+        });
+    </script>
+</head>
+<body>
+
+    <div id="controls">
+        <button id="connect-btn">Start Browser Control</button>
+    </div>
+
+    <div id="screen-container"></div>
+
+</body>
+</html>
